@@ -2,18 +2,18 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         String csvFile = "Police_Department_Incident_Reports__2018_to_Present.csv";
+        List<Incident> incidents = new ArrayList<Incident>();
 
         try (FileReader fileReader = new FileReader(csvFile);
              CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
@@ -23,6 +23,17 @@ public class Main {
 
             // Find the indices of the required fields
             Map<String, Integer> fieldIndices = getFieldIndices(headers);
+
+            // Process each record of the CSV file
+            for (CSVRecord record : csvParser) {
+                // Create an Incident object from the CSV record
+                Incident incident = createIncidentFromRecord(record);
+
+                // Add the Incident object to the list
+                incidents.add(incident);
+            }
+
+            System.out.println(incidents.size());
 
             // Calculate count of incidents per Incident Category for each year using TreeMap
             TreeMap<Integer, TreeMap<String, Long>> incidentCountMap = createIncidentCountMap(csvParser, fieldIndices);
@@ -66,5 +77,38 @@ public class Main {
     private static int extractYear(String incidentDate) {
         // Assuming the incident date format is "yyyy-mm-dd"
         return Integer.parseInt(incidentDate.substring(0, 4));
+    }
+
+    private static Incident createIncidentFromRecord(CSVRecord record) {
+        // Create an Incident object from the CSV record
+        DateTimeFormatter ldt = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm:ss a",Locale.ENGLISH);
+
+        Incident incident = new Incident();
+        LocalDateTime incDate = LocalDateTime.parse(record.get("Incident Datetime"), ldt);
+        incident.setIncidentDatetime(incDate);
+        incident.setIncidentDate(record.get("Incident Date"));
+        incident.setIncidentTime(record.get("Incident Time"));
+        incident.setIncidentYear(record.get("Incident Year"));
+        incident.setIncidentDayOfWeek(record.get("Incident Day of Week"));
+        incident.setReportDatetime(record.get("Report Datetime"));
+        incident.setRowId(record.get("Row ID"));
+        incident.setIncidentId(record.get("Incident ID"));
+        incident.setIncidentNumber(record.get("Incident Number"));
+        incident.setCadNumber(record.get("CAD Number"));
+        incident.setReportTypeCode(record.get("Report Type Code"));
+        incident.setReportTypeDescription(record.get("Report Type Description"));
+        incident.setFiledOnline(record.get("Filed Online"));
+        incident.setIncidentCode(record.get("Incident Code"));
+        incident.setIncidentCategory(record.get("Incident Category"));
+        incident.setIncidentSubcategory(record.get("Incident Subcategory"));
+        incident.setIncidentDescription(record.get("Incident Description"));
+        incident.setResolution(record.get("Resolution"));
+        incident.setIntersection(record.get("Intersection"));
+        incident.setCnn(record.get("CNN"));
+        incident.setPoliceDistrict(record.get("Police District"));
+        incident.setAnalysisNeighborhood(record.get("Analysis Neighborhood"));
+        //incident.setSupervisor(record.get("Supervisor"));
+
+        return incident;
     }
 }
