@@ -4,7 +4,7 @@ import folium
 import webbrowser
 import os
 
-# Calculate the datetime x days ago
+# Calculate the datetime 24 hours ago
 datetime_24_hours_ago = datetime.now() - timedelta(days=5)
 
 # Format the datetime as a string in the format 'YYYY-MM-DDTHH:MM:SS'
